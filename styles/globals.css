@@ -869,3 +869,155 @@ footer {
 .image-remove-btn:hover {
   background: #dc3545;
 }
+/* Append this to the END of styles/globals.css
+   (This is DIFFERENT from gallery-additions.css — you need both, not one or the other) */
+
+/* ==================== TOAST NOTIFICATIONS ==================== */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 400px;
+  z-index: 9999;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.notification-success {
+  background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.notification-error {
+  background: linear-gradient(135deg, #dc3545, #e74c3c);
+}
+
+.notification-warning {
+  background: linear-gradient(135deg, #ffc107, #ff9800);
+  color: #333;
+}
+
+.notification-info {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.notification-hide {
+  animation: slideOutRight 0.3s ease-in forwards;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(400px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(400px); opacity: 0; }
+}
+
+/* ==================== SIZE / COLOR SELECTOR BUTTONS ==================== */
+.size-selector {
+  margin: 15px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.size-selector label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #212529;
+  font-size: 0.9rem;
+}
+
+.size-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.size-btn {
+  padding: 8px 12px;
+  border: 2px solid #dee2e6;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  min-width: 40px;
+  text-align: center;
+}
+
+.size-btn:hover {
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.size-btn.selected {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+/* ==================== PRODUCTS TABLE (admin manage list) ==================== */
+.products-table {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.products-table table {
+  width: 100%;
+}
+
+.products-table th {
+  background: #f8f9fa;
+  padding: 12px;
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.products-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.products-table tr:hover {
+  background: #f8f9fa;
+}
+
+.products-table .btn-danger {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 480px) {
+  .notification {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+    font-size: 0.9rem;
+  }
+
+  .size-options {
+    gap: 6px;
+  }
+
+  .size-btn {
+    padding: 6px 10px;
+    min-width: 35px;
+    font-size: 0.85rem;
+  }
+}
