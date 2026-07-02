@@ -92,7 +92,7 @@ export default function AddProduct() {
     sizes: [],
     colors: ''
   });
-  const [images, setImages] = useState([]); // array of Cloudinary URLs
+  const [media, setMedia] = useState([]); // array of { url, type: 'image' | 'video' }
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
@@ -111,27 +111,31 @@ export default function AddProduct() {
     });
   };
 
-  // Upload a single file to Cloudinary, return its hosted URL
+  // Upload one file to Cloudinary. /auto/upload lets Cloudinary detect
+  // image vs video on its own, so one endpoint handles both.
   const uploadToCloudinary = async (file) => {
     const data = new FormData();
     data.append('file', file);
     data.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
     const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`,
       { method: 'POST', body: data }
     );
 
     if (!res.ok) throw new Error('Cloudinary upload failed');
     const result = await res.json();
-    return result.secure_url;
+    return {
+      url: result.secure_url,
+      type: result.resource_type === 'video' ? 'video' : 'image'
+    };
   };
 
-  const handleImageSelect = async (e) => {
+  const handleMediaSelect = async (e) => {
     const files = Array.from(e.target.files);
 
-    if (images.length + files.length > 6) {
-      showNotification('⚠️ Maximum 6 images allowed', 'warning');
+    if (media.length + files.length > 6) {
+      showNotification('⚠️ Maximum 6 files allowed (photos + videos combined)', 'warning');
       return;
     }
     if (files.length === 0) return;
@@ -145,21 +149,21 @@ export default function AddProduct() {
     try {
       const uploaded = [];
       for (const file of files) {
-        const url = await uploadToCloudinary(file);
-        uploaded.push(url);
+        const result = await uploadToCloudinary(file);
+        uploaded.push(result);
       }
-      setImages(prev => [...prev, ...uploaded]);
-      showNotification(`✅ ${uploaded.length} image(s) uploaded`, 'success');
+      setMedia(prev => [...prev, ...uploaded]);
+      showNotification(`✅ ${uploaded.length} file(s) uploaded`, 'success');
     } catch (err) {
-      showNotification('❌ Image upload failed. Check Cloudinary setup.', 'error');
+      showNotification('❌ Upload failed. Check Cloudinary setup.', 'error');
     } finally {
       setUploading(false);
       e.target.value = ''; // allow re-selecting the same file
     }
   };
 
-  const removeImage = (index) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+  const removeMedia = (index) => {
+    setMedia(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -172,8 +176,8 @@ export default function AddProduct() {
       if (!formData.name || !formData.price || !formData.stock) {
         throw new Error('Please fill in all required fields');
       }
-      if (images.length < 3) {
-        throw new Error('Please upload at least 3 images');
+      if (media.length < 1) {
+        throw new Error('Please upload at least 1 photo or video');
       }
 
       const finalCategory = formData.category === '__custom__'
@@ -184,16 +188,20 @@ export default function AddProduct() {
         throw new Error('Please select or enter a category');
       }
 
+      // Thumbnail must be an actual image — never a video URL —
+      // so the store grid never tries to render a video as an <img>.
+      const firstImage = media.find(m => m.type === 'image');
+
       const product = {
         id: Date.now(),
         name: formData.name,
         price: parseInt(formData.price),
         description: formData.description,
-        images: images,           // array of 3-6 URLs
-        image: images[0],         // first image used as the primary/thumbnail
+        media: media,                            // full array: { url, type }
+        image: firstImage ? firstImage.url : null, // safe thumbnail, or null
         stock: parseInt(formData.stock),
         category: finalCategory,
-        sizes: formData.sizes,    // e.g. ['S', 'M', 'L']
+        sizes: formData.sizes,
         colors: formData.colors.split(',').map(c => c.trim()).filter(Boolean),
         createdAt: new Date().toISOString()
       };
@@ -210,7 +218,7 @@ export default function AddProduct() {
         name: '', price: '', description: '', stock: '',
         category: '', customCategory: '', sizes: [], colors: ''
       });
-      setImages([]);
+      setMedia([]);
       setSuccess(true);
       showNotification('✅ Product added successfully!', 'success');
       loadProducts();
@@ -283,30 +291,35 @@ export default function AddProduct() {
               placeholder="Product description and details" rows="4" />
           </div>
 
-          {/* MULTI-IMAGE UPLOAD */}
+          {/* MULTI-MEDIA UPLOAD: photos and videos, 1-6 total, no minimum-3 */}
           <div className="form-group">
-            <label>Product Images * (3–6 required)</label>
+            <label>Product Photos & Videos (1–6, any mix)</label>
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,video/*"
               multiple
-              onChange={handleImageSelect}
-              disabled={uploading || images.length >= 6}
+              onChange={handleMediaSelect}
+              disabled={uploading || media.length >= 6}
             />
             {uploading && <p style={{ color: '#007bff', marginTop: '8px' }}>⏳ Uploading...</p>}
 
-            {images.length > 0 && (
+            {media.length > 0 && (
               <div className="image-gallery-preview">
-                {images.map((url, i) => (
+                {media.map((item, i) => (
                   <div key={i} className="image-gallery-item">
-                    <img src={url} alt={`Product ${i + 1}`} />
-                    <button type="button" onClick={() => removeImage(i)} className="image-remove-btn">×</button>
+                    {item.type === 'video' ? (
+                      <video src={item.url} muted />
+                    ) : (
+                      <img src={item.url} alt={`Product ${i + 1}`} />
+                    )}
+                    {item.type === 'video' && <span className="video-badge">▶ video</span>}
+                    <button type="button" onClick={() => removeMedia(i)} className="image-remove-btn">×</button>
                   </div>
                 ))}
               </div>
             )}
             <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '6px' }}>
-              {images.length} / 6 images uploaded {images.length < 3 && '(minimum 3 required)'}
+              {media.length} / 6 files uploaded (at least 1 required)
             </p>
           </div>
 
@@ -380,7 +393,7 @@ export default function AddProduct() {
         <div className="help-box">
           <h3>📝 Instructions:</h3>
           <ul>
-            <li>✅ Upload 3–6 product images (select multiple files at once)</li>
+            <li>✅ Upload 1–6 files — any mix of photos and videos</li>
             <li>✅ Pick all sizes this product comes in</li>
             <li>✅ List colors separated by commas</li>
             <li>✅ Choose a category, or add your own</li>

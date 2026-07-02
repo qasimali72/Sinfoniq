@@ -104,7 +104,7 @@ export default function Store() {
           filteredProducts.map(product => (
             <div key={product.id} className="product-card">
               <img
-                src={product.image || (product.images && product.images[0])}
+                src={product.image || 'https://via.placeholder.com/300x300?text=No+Image'}
                 alt={product.name}
                 className="product-image"
               />
