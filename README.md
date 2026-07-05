@@ -169,6 +169,6 @@ For issues or questions, open an issue on GitHub or contact support.
 
 ---
 
-**Created:** 2026
+**Created:** 2024
 **Status:** Active Development
 **Version:** 1.0.0
