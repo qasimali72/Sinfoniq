@@ -70,7 +70,9 @@ export default function Home() {
     }
     
     localStorage.setItem('cart', JSON.stringify(cart));
-    alert(`✅ ${product.name} added to cart!`);
+    // Dispatch a custom event to notify other components (like the navbar) that the cart has changed.
+    window.dispatchEvent(new Event('cart-updated'));
+    // Consider showing a temporary toast notification instead of an alert.
   };
 
   return (

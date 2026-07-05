@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Link from 'next/link';
 
 export default function Checkout() {
@@ -15,6 +16,8 @@ export default function Checkout() {
   });
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
   // Load cart from localStorage
   useEffect(() => {
@@ -35,13 +38,12 @@ export default function Checkout() {
   const handleSubmitOrder = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     try {
       // Validate form
       if (!customerInfo.name || !customerInfo.email || !customerInfo.phone || !customerInfo.address) {
-        alert('Please fill in all required fields');
-        setLoading(false);
-        return;
+        throw new Error('Please fill in all required delivery information fields.');
       }
 
       // Create order object
@@ -55,25 +57,27 @@ export default function Checkout() {
         createdAt: new Date().toISOString()
       };
 
-      // Save order (in real app, send to API)
-      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-      orders.push(order);
-      localStorage.setItem('orders', JSON.stringify(orders));
+      // Send order to the API
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order)
+      });
+
+      if (!response.ok) {
+        const res = await response.json();
+        throw new Error(res.error || 'Failed to place order.');
+      }
 
       // Clear cart
       localStorage.removeItem('cart');
+      window.dispatchEvent(new Event('cart-updated')); // Notify nav bar
 
       // Show success
       setOrderPlaced(true);
-      setLoading(false);
-
-      // Redirect after 3 seconds
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 3000);
-
     } catch (error) {
-      alert('Error placing order: ' + error.message);
+      setError(error.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -82,11 +86,11 @@ export default function Checkout() {
     return (
       <div className="container">
         <div className="success-message">
-          <h1>✓ Order Placed Successfully!</h1>
+          <h1>✅ Order Placed Successfully!</h1>
           <p>Order ID: #{Date.now()}</p>
           <p>Confirmation has been sent to {customerInfo.email}</p>
-          <p>Redirecting to home page...</p>
-          <Link href="/">
+          <p>Thank you for shopping with Sinfoniq!</p>
+          <Link href="/" passHref>
             <button className="btn-primary">Back to Home</button>
           </Link>
         </div>
@@ -101,6 +105,8 @@ export default function Checkout() {
       <div className="checkout-wrapper">
         <div className="checkout-form">
           <form onSubmit={handleSubmitOrder}>
+            {error && <div className="alert alert-error">❌ {error}</div>}
+
             <h2>Delivery Information</h2>
             
             <div className="form-group">
@@ -214,7 +220,7 @@ export default function Checkout() {
               disabled={loading || cart.length === 0}
             >
               {loading ? 'Processing...' : 'Place Order'}
-            </button>
+            </button> 
 
             <Link href="/cart">
               <button type="button" className="btn-secondary btn-large">

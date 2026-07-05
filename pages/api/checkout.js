@@ -1,8 +1,11 @@
 // API route for handling checkout and payments
-// This is a basic implementation
-// For production, integrate with Stripe or other payment gateway
+// This is a basic implementation.
+// For production, you must use a persistent database (e.g., Vercel Postgres, Supabase)
+// instead of an in-memory array.
 
-let orders = [];
+import { v4 as uuidv4 } from 'uuid';
+
+let orders = []; // ⚠️ WARNING: In-memory storage. Data will be lost on server restart.
 
 export default function handler(req, res) {
   if (req.method === 'POST') {
@@ -18,7 +21,7 @@ export default function handler(req, res) {
 
       // Create order object
       const order = {
-        id: `ORD-${Date.now()}`,
+        id: `ORD-${uuidv4()}`, // Use a more robust unique ID
         customer: orderData.customer,
         items: orderData.items,
         total: orderData.total,
@@ -27,7 +30,7 @@ export default function handler(req, res) {
         createdAt: new Date().toISOString()
       };
 
-      // Save order
+      // Save order (to in-memory array for now)
       orders.push(order);
 
       // TODO: Process payment based on payment method
@@ -57,7 +60,12 @@ export default function handler(req, res) {
     }
   }
   else if (req.method === 'GET') {
-    // Get all orders (admin only)
+    // ⚠️ WARNING: This is insecure. Anyone can view all orders.
+    // In a real application, this endpoint should be protected and only accessible by authenticated admins.
+    // For example, check for an admin session or an API key.
+    // const isAdmin = await checkAdminAuth(req);
+    // if (!isAdmin) return res.status(403).json({ error: 'Forbidden' });
+
     res.status(200).json(orders);
   }
   else {

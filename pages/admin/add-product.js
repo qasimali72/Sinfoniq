@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-// ⚠️ FILL THESE IN FROM YOUR CLOUDINARY DASHBOARD (Settings → Upload)
-const CLOUDINARY_CLOUD_NAME = 'catpic';
-const CLOUDINARY_UPLOAD_PRESET = 'web_uploads';
+// These should be in your .env.local file for security and configurability
+const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const DEFAULT_CATEGORIES = ['clothing', 'shoes', 'accessories', 'electronics'];
 
 export default function AddProduct() {
-  // ⚠️ CHANGE THIS PASSWORD BEFORE DEPLOYING
-  const ADMIN_PASSWORD = 'Sinfoniq@Admin2024#Secure';
+  // ⚠️ This password should be stored in an environment variable, not in the code.
+  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
@@ -119,7 +119,7 @@ export default function AddProduct() {
     data.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
     const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${catpic}/auto/upload`,
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`,
       { method: 'POST', body: data }
     );
 
@@ -140,8 +140,8 @@ export default function AddProduct() {
     }
     if (files.length === 0) return;
 
-    if (CLOUDINARY_CLOUD_NAME === 'catpic') {
-      showNotification('⚠️ Cloudinary not configured yet — see setup notes in the code', 'error');
+    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+      showNotification('⚠️ Cloudinary is not configured. Please set environment variables.', 'error');
       return;
     }
 
