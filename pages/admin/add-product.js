@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 // ⚠️ FILL THESE IN FROM YOUR CLOUDINARY DASHBOARD (Settings → Upload)
 const CLOUDINARY_CLOUD_NAME = 'catpic';
-const CLOUDINARY_UPLOAD_PRESET = '';
+const CLOUDINARY_UPLOAD_PRESET = 'web_uploads';
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const DEFAULT_CATEGORIES = ['clothing', 'shoes', 'accessories', 'electronics'];
