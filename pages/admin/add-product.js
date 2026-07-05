@@ -119,7 +119,7 @@ export default function AddProduct() {
     data.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
     const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`,
+      `https://api.cloudinary.com/v1_1/${catpic}/auto/upload`,
       { method: 'POST', body: data }
     );
 
@@ -140,7 +140,7 @@ export default function AddProduct() {
     }
     if (files.length === 0) return;
 
-    if (CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME') {
+    if (CLOUDINARY_CLOUD_NAME === 'catpic') {
       showNotification('⚠️ Cloudinary not configured yet — see setup notes in the code', 'error');
       return;
     }
