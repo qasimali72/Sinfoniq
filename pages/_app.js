@@ -52,6 +52,7 @@ function MyApp({ Component, pageProps }) {
             <Link href="/">Home</Link>
             <Link href="/store">Store</Link>
             <Link href="/admin/add-product">Admin</Link>
+            <Link href="/orders">Orders</Link>
             <Link href="/cart">
               🛒 Cart ({cartCount})
             </Link>
