@@ -9,7 +9,6 @@ export default function Checkout() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
-  const [orderId, setOrderId] = useState(null);
 
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -21,13 +20,11 @@ export default function Checkout() {
   });
 
   useEffect(() => {
-    // Load cart
     const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
     setCart(savedCart);
     const sum = savedCart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
     setTotal(sum);
 
-    // Get logged-in user and pre-fill email
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
@@ -76,11 +73,8 @@ export default function Checkout() {
         throw new Error(result.error || 'Failed to place order');
       }
 
-      // Clear cart
       localStorage.removeItem('cart');
       window.dispatchEvent(new Event('cart-updated'));
-
-      setOrderId(result.order.id);
       setOrderPlaced(true);
       setLoading(false);
 
@@ -95,22 +89,16 @@ export default function Checkout() {
       <div className="container">
         <div style={{ maxWidth: '500px', margin: '80px auto', textAlign: 'center', padding: '40px', background: '#f8f9fa', borderRadius: '8px' }}>
           <h1 style={{ color: '#28a745' }}>✅ Order Placed!</h1>
-          <p style={{ fontSize: '1.1rem', margin: '20px 0' }}>
-            Thank you, {customerInfo.name}!
-          </p>
-          <p>Your order has been saved. We'll contact you at <strong>{customerInfo.phone}</strong> to confirm delivery.</p>
+          <p style={{ fontSize: '1.1rem', margin: '20px 0' }}>Thank you, {customerInfo.name}!</p>
+          <p>We will contact you at <strong>{customerInfo.phone}</strong> to confirm delivery.</p>
           {user && (
             <p style={{ marginTop: '15px' }}>
               <Link href="/orders">View your order history →</Link>
             </p>
           )}
           <div style={{ marginTop: '30px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
-            <Link href="/store">
-              <button className="btn-primary">Continue Shopping</button>
-            </Link>
-            <Link href="/">
-              <button className="btn-secondary">Go Home</button>
-            </Link>
+            <Link href="/store"><button className="btn-primary">Continue Shopping</button></Link>
+            <Link href="/"><button className="btn-secondary">Go Home</button></Link>
           </div>
         </div>
       </div>
@@ -120,7 +108,6 @@ export default function Checkout() {
   return (
     <div className="container">
       <h1>Checkout</h1>
-
       <div className="checkout-wrapper">
         <div className="checkout-form">
           <form onSubmit={handleSubmit}>
@@ -134,48 +121,38 @@ export default function Checkout() {
 
             <div className="form-group">
               <label>Full Name *</label>
-              <input type="text" name="name" value={customerInfo.name}
-                onChange={handleInputChange} placeholder="Your full name" required />
+              <input type="text" name="name" value={customerInfo.name} onChange={handleInputChange} placeholder="Your full name" required />
             </div>
 
             <div className="form-group">
               <label>Email *</label>
-              <input type="email" name="email" value={customerInfo.email}
-                onChange={handleInputChange} placeholder="your@email.com" required />
+              <input type="email" name="email" value={customerInfo.email} onChange={handleInputChange} placeholder="your@email.com" required />
             </div>
 
             <div className="form-group">
               <label>Phone Number *</label>
-              <input type="tel" name="phone" value={customerInfo.phone}
-                onChange={handleInputChange} placeholder="03XXXXXXXXX" required />
+              <input type="tel" name="phone" value={customerInfo.phone} onChange={handleInputChange} placeholder="03XXXXXXXXX" required />
             </div>
 
             <div className="form-group">
               <label>Delivery Address *</label>
-              <textarea name="address" value={customerInfo.address}
-                onChange={handleInputChange} placeholder="Your full delivery address"
-                rows="3" required />
+              <textarea name="address" value={customerInfo.address} onChange={handleInputChange} placeholder="Your full delivery address" rows="3" required />
             </div>
 
             <div className="form-group">
               <label>City *</label>
-              <input type="text" name="city" value={customerInfo.city}
-                onChange={handleInputChange} placeholder="City name" required />
+              <input type="text" name="city" value={customerInfo.city} onChange={handleInputChange} placeholder="City name" required />
             </div>
 
             <div className="form-group">
               <label>Zip Code</label>
-              <input type="text" name="zipcode" value={customerInfo.zipcode}
-                onChange={handleInputChange} placeholder="Zip/Postal code" />
+              <input type="text" name="zipcode" value={customerInfo.zipcode} onChange={handleInputChange} placeholder="Zip/Postal code" />
             </div>
 
             <h2>Payment Method</h2>
-
             <div className="payment-options">
               <div className="radio-group">
-                <input type="radio" id="cod" name="payment" value="cod"
-                  checked={paymentMethod === 'cod'}
-                  onChange={(e) => setPaymentMethod(e.target.value)} />
+                <input type="radio" id="cod" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={(e) => setPaymentMethod(e.target.value)} />
                 <label htmlFor="cod">
                   <strong>Cash on Delivery (COD)</strong>
                   <p>Pay when you receive your order</p>
@@ -183,15 +160,12 @@ export default function Checkout() {
               </div>
             </div>
 
-            <button type="submit" className="btn-primary btn-large"
-              disabled={loading || cart.length === 0}>
+            <button type="submit" className="btn-primary btn-large" disabled={loading || cart.length === 0}>
               {loading ? '⏳ Placing Order...' : '✅ Place Order'}
             </button>
 
             <Link href="/cart">
-              <button type="button" className="btn-secondary btn-large">
-                ← Back to Cart
-              </button>
+              <button type="button" className="btn-secondary btn-large">← Back to Cart</button>
             </Link>
           </form>
         </div>
@@ -201,27 +175,15 @@ export default function Checkout() {
           <div className="summary-items">
             {cart.map((item, i) => (
               <div key={i} className="summary-item">
-                <span>{item.name} x{item.quantity || 1}
-                  {item.size && ` (${item.size})`}
-                  {item.color && ` - ${item.color}`}
-                </span>
+                <span>{item.name} x{item.quantity || 1}{item.size && ` (${item.size})`}</span>
                 <span>₨{item.price * (item.quantity || 1)}</span>
               </div>
             ))}
           </div>
           <div className="summary-totals">
-            <div className="total-row">
-              <span>Subtotal:</span>
-              <span>₨{total}</span>
-            </div>
-            <div className="total-row">
-              <span>Shipping:</span>
-              <span>₨0</span>
-            </div>
-            <div className="total-row grand-total">
-              <span>Total:</span>
-              <span>₨{total}</span>
-            </div>
+            <div className="total-row"><span>Subtotal:</span><span>₨{total}</span></div>
+            <div className="total-row"><span>Shipping:</span><span>₨0</span></div>
+            <div className="total-row grand-total"><span>Total:</span><span>₨{total}</span></div>
           </div>
         </div>
       </div>

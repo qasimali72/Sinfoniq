@@ -18,7 +18,6 @@ function MyApp({ Component, pageProps }) {
     window.addEventListener('storage', updateCartCount);
     window.addEventListener('cart-updated', updateCartCount);
 
-    // Check who's currently logged in, and keep listening for login/logout
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
@@ -48,16 +47,17 @@ function MyApp({ Component, pageProps }) {
               🛍️ SINFONIQ
             </span>
           </Link>
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
             <Link href="/">Home</Link>
             <Link href="/store">Store</Link>
             <Link href="/admin/add-product">Admin</Link>
-            <Link href="/orders">Orders</Link>
-            <Link href="/cart"> 🛒 Cart ({cartCount})
-            </Link>
+            <Link href="/cart">🛒 Cart ({cartCount})</Link>
             {user ? (
               <>
-                <span style={{ fontSize: '0.9rem' }}>Hi, {user.email}</span>
+                <Link href="/orders">My Orders</Link>
+                <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>
+                  {user.email}
+                </span>
                 <button onClick={handleLogout} className="btn-danger" style={{ padding: '6px 12px' }}>
                   Logout
                 </button>
@@ -77,7 +77,7 @@ function MyApp({ Component, pageProps }) {
       <footer>
         <div className="container">
           <p>&copy; 2026 Sinfoniq - All Rights Reserved</p>
-          <p>Email: support@sinfoniq.com | Phone: +92-344-6237173</p>
+          <p>Email: support@sinfoniq.com | Phone: +92-XXX-XXXXXXX</p>
         </div>
       </footer>
     </>
